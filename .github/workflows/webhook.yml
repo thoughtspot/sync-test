@@ -1,0 +1,72 @@
+name: PR Merge Webhook Notification
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  notify-webhook:
+    # Only run this job if the PR was merged (not just closed)
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Send webhook notification
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
+          SEND_WEBHOOK: ${{ secrets.SEND_WEBHOOK || 'false' }}
+        run: |
+          # Create payload with PR and repository information
+          PAYLOAD=$(cat << EOF
+          {
+            "repository": {
+              "name": "${{ github.repository }}",
+              "full_name": "${{ github.repository }}",
+              "owner": "${{ github.repository_owner }}"
+            },
+            "pull_request": {
+              "number": ${{ github.event.pull_request.number }},
+              "title": "${{ github.event.pull_request.title }}",
+              "merged_by": "${{ github.event.pull_request.merged_by.login }}",
+              "merged_at": "${{ github.event.pull_request.merged_at }}",
+              "html_url": "${{ github.event.pull_request.html_url }}",
+              "base": {
+                "ref": "${{ github.event.pull_request.base.ref }}",
+                "sha": "${{ github.event.pull_request.base.sha }}"
+              },
+              "head": {
+                "ref": "${{ github.event.pull_request.head.ref }}",
+                "sha": "${{ github.event.pull_request.head.sha }}"
+              }
+            }
+          }
+          EOF
+          )
+          
+          # Compute HMAC signature for authentication
+          TIMESTAMP=$(date -u +%s)
+          SIGNATURE=$(echo -n "${TIMESTAMP}${PAYLOAD}" | openssl dgst -sha256 -hmac "${WEBHOOK_SECRET}" | awk '{print $2}')
+          
+          # Echo the payload and headers for verification
+          echo "==== WEBHOOK DEBUG INFO ===="
+          echo "Payload:"
+          echo "${PAYLOAD}" | jq .
+          echo ""
+          echo "Headers:"
+          echo "X-Hub-Signature-256: sha256=${SIGNATURE}"
+          echo "X-Webhook-Timestamp: ${TIMESTAMP}"
+          echo "==== END DEBUG INFO ===="
+          
+          # For testing, you can enable/disable the actual webhook call with this conditional
+          if [[ "${SEND_WEBHOOK:-true}" == "true" ]]; then
+            echo "Sending webhook request to ${WEBHOOK_URL}..."
+            curl -X POST "${WEBHOOK_URL}" \
+              -H "Content-Type: application/json" \
+              -H "X-Hub-Signature-256: sha256=${SIGNATURE}" \
+              -H "X-Webhook-Timestamp: ${TIMESTAMP}" \
+              -d "${PAYLOAD}" \
+              -v  # Verbose output for debugging
+          else
+            echo "Webhook sending disabled. This is just a verification run."
+          fi
