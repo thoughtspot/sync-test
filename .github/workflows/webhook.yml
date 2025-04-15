@@ -23,7 +23,11 @@ jobs:
             "repository": {
               "name": "${{ github.repository }}",
               "full_name": "${{ github.repository }}",
-              "owner": "${{ github.repository_owner }}"
+              "owner": "${{ github.repository_owner }}",
+              "html_url": "https://github.com/${{ github.repository }}",
+              "clone_url": "https://github.com/${{ github.repository }}.git",
+              "ssh_url": "git@github.com:${{ github.repository }}.git",
+              "api_url": "https://api.github.com/repos/${{ github.repository }}"
             },
             "pull_request": {
               "number": ${{ github.event.pull_request.number }},
