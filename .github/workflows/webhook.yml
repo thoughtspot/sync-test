@@ -2,8 +2,8 @@ name: PR Merge Webhook Notification
 
 on:
   workflow_dispatch:
-  pull_request:
-    types: [closed]
+  # pull_request:
+    # types: [closed]
 
 jobs:
   notify-webhook:
