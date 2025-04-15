@@ -1,14 +1,13 @@
 name: PR Merge Webhook Notification
 
 on:
-  workflow_dispatch:
-  # pull_request:
-    # types: [closed]
+  pull_request:
+    types: [closed]
 
 jobs:
   notify-webhook:
     # Only run this job if the PR was merged (not just closed)
-    # if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     
     steps:
