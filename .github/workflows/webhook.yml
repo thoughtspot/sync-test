@@ -1,6 +1,7 @@
 name: PR Merge Webhook Notification
 
 on:
+  workflow_dispatch:
   pull_request:
     types: [closed]
 
