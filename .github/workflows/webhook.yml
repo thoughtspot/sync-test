@@ -1,4 +1,4 @@
-name: PR Merge Webhook Notification
+name: PR Merge Webhook Notification and Sync
 
 on:
   pull_request:
