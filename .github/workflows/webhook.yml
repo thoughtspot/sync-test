@@ -21,7 +21,7 @@ jobs:
           PAYLOAD=$(cat << EOF
           {
             "repository": {
-              "name": ${{ github.event.repository.name }},
+              "name": "${{ github.event.repository.name }}",
               "full_name": "${{ github.repository }}",
               "owner": "${{ github.repository_owner }}",
               "html_url": "https://github.com/${{ github.repository }}",
